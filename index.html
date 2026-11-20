@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#2a1a0f">
+<meta name="format-detection" content="telephone=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Maze">
+<meta name="description" content="A wooden labyrinth marble game for your phone. Tilt to roll a steel ball through the maze without dropping it into the holes.">
+<title>Maze | Tilt Labyrinth Marble Game</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #2a1a0f; overscroll-behavior: none; touch-action: none; }
+  body { position: fixed; inset: 0; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; font: 15px/1.35 -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI", Roboto, sans-serif; color: #fff; }
+  button { -webkit-tap-highlight-color: transparent; touch-action: manipulation; cursor: pointer; }
+  canvas { position: fixed; left: 0; top: 0; display: block; touch-action: none; transform-origin: 50% 50%; }
+  #safe { position: fixed; inset: 0; visibility: hidden; pointer-events: none; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+
+  .overlay { position: fixed; inset: 0; display: grid; place-items: center; z-index: 5; padding: 16px; box-sizing: border-box; transition: opacity .5s ease, visibility 0s linear 0s; }
+  .overlay.hide, #win:not(.show) { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .25s ease, visibility 0s linear .25s; }
+  #intro { cursor: pointer; background: rgba(20,12,6,.25); }
+  #win { background: rgba(20,12,6,.35); }
+  .card { text-align: center; color: #2a1d12; padding: 30px 28px; max-width: 300px; border-radius: 30px; background: rgba(246,236,220,.82); -webkit-backdrop-filter: blur(22px) saturate(1.2); backdrop-filter: blur(22px) saturate(1.2); box-shadow: 0 24px 70px rgba(0,0,0,.4); animation: rise .8s cubic-bezier(.2,.8,.2,1) both; }
+  .card h1 { margin: 0; font-weight: 300; font-size: 42px; letter-spacing: .32em; text-indent: .32em; text-transform: uppercase; }
+  .card h2 { margin: 12px 0 0; font-size: 18px; font-weight: 500; }
+  .card p { margin: 12px 0 22px; color: rgba(42,29,18,.62); font-size: 15px; }
+  .cta { display: inline-flex; align-items: center; justify-content: center; min-width: 132px; padding: 14px 30px; border: 0; border-radius: 999px; background: #2a1d12; color: #f6ecdc; font: inherit; font-weight: 600; letter-spacing: .04em; box-shadow: 0 10px 30px rgba(20,12,6,.25); transition: transform .15s ease; }
+  .cta:active, #intro:active .cta { transform: scale(.97); }
+  .cta.ghost { background: rgba(42,29,18,.1); color: #2a1d12; box-shadow: none; min-width: 0; }
+  .hint { margin-top: 24px; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: rgba(42,29,18,.5); }
+  #winTime { font-size: 44px; font-weight: 300; margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
+  #win .card p { margin: 0 0 22px; }
+  #win .actions { display: flex; gap: 10px; justify-content: center; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+  #menuBtn { position: fixed; right: max(6px, env(safe-area-inset-right)); top: max(6px, env(safe-area-inset-top)); width: 44px; height: 44px; border: 0; background: none; z-index: 4; display: grid; place-items: center; padding: 0; opacity: 0; pointer-events: none; transition: opacity .5s ease; }
+  #menuBtn i { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,236,210,.16); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); display: grid; place-items: center; }
+  #menuBtn svg { width: 16px; height: 16px; }
+  .started #menuBtn { opacity: .8; pointer-events: auto; }
+  #menu { position: fixed; right: max(10px, env(safe-area-inset-right)); top: calc(max(6px, env(safe-area-inset-top)) + 48px); width: min(340px, calc(100vw - 20px)); box-sizing: border-box; padding: 16px 16px 12px; border-radius: 22px; background: rgba(34,22,13,.8); -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4); box-shadow: 0 20px 60px rgba(0,0,0,.4), inset 0 0 0 .5px rgba(255,255,255,.08); z-index: 6; transform-origin: 100% 0; transform: translateY(-6px) scale(.96); opacity: 0; pointer-events: none; transition: transform .22s cubic-bezier(.2,.8,.2,1), opacity .18s ease; }
+  #menu.open { transform: none; opacity: 1; pointer-events: auto; }
+  #menu h2 { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,236,210,.5); margin: 2px 4px 10px; font-weight: 600; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  #levels { max-height: 132px; overflow-y: auto; }
+  .chip { border: 0; border-radius: 999px; padding: 9px 14px; font: inherit; font-size: 13.5px; color: #fff; background: rgba(255,255,255,.09); transition: background .2s ease, color .2s ease; }
+  .chip.lvl { min-width: 40px; padding: 9px 0; font-variant-numeric: tabular-nums; }
+  .chip.on { background: rgba(255,240,220,.9); color: #2a1d12; }
+  .chip.primary { background: #f6ecdc; color: #2a1d12; font-weight: 600; flex: 1 1 100%; padding: 12px 14px; }
+  #toast { position: fixed; left: 50%; bottom: calc(28px + env(safe-area-inset-bottom)); transform: translate(-50%, 12px); opacity: 0; transition: opacity .3s ease, transform .3s ease; background: rgba(34,22,13,.85); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); padding: 10px 16px; border-radius: 14px; font-size: 13px; z-index: 7; width: max-content; max-width: min(320px, 80vw); text-align: center; pointer-events: none; }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+<div id="safe"></div>
+<canvas id="c"></canvas>
+<div id="intro" class="overlay"><div class="card">
+  <h1>Maze</h1>
+  <h2>A wooden labyrinth in your phone</h2>
+  <p>Tilt to roll the steel ball along the line to the brass hole. Every other hole swallows it and sends you back to the start.</p>
+  <span class="cta">Play</span>
+  <div class="hint">Hold it how you like · Tilt · Steady</div>
+</div></div>
+<div id="win" class="overlay"><div class="card">
+  <h2 id="winTitle">Level done</h2>
+  <div id="winTime">0:00.0</div>
+  <p id="winSub"></p>
+  <div class="actions"><button class="cta ghost" id="again">Again</button><button class="cta" id="next">Next level</button></div>
+</div></div>
+<button id="menuBtn" aria-label="Menu"><i><svg viewBox="0 0 24 24" fill="#fff"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></i></button>
+<div id="menu">
+  <h2>Level</h2>
+  <div class="row" id="levels"></div>
+  <div class="row">
+    <button class="chip primary" id="restart">Restart level</button>
+    <button class="chip" id="level">Level the board</button>
+    <button class="chip" id="guide">Guide line on</button>
+    <button class="chip" id="sound">Sound on</button>
+    <button class="chip" id="haptics">Haptics on</button>
+  </div>
+</div>
+<div id="toast"></div>
+<script type="module" src="src/main.js"></script>
+<script>
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
