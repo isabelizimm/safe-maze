@@ -1,10 +1,10 @@
-// A solid steel ball rolling on a wooden board. Units: mm, seconds.
+// A solid steel ball bearing rolling in a plastic tray. Units: mm, seconds.
 
 export const G = 9810;               // mm/s²
 export const SUBSTEP = 1 / 1000;     // s
 const ROLL = 5 / 7;                  // a rolling solid sphere accelerates at 5/7 of a sliding one
 const ROLLING_RESISTANCE = 0.006 * G;
-const RESTITUTION = 0.45;            // steel on hardwood
+const RESTITUTION = 0.45;            // steel on hard plastic
 const MAX_SPEED = 1500;
 const FALL_TIME = 0.45;
 

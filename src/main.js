@@ -1,7 +1,7 @@
 import { buildLevel } from './maze.js';
 import { createBall, respawn, step, SUBSTEP } from './physics.js';
 import { Input } from './input.js';
-import { Renderer } from './render.js';
+import { Renderer, paletteFor } from './render.js';
 import { Sound } from './audio.js';
 
 const $ = (s) => document.querySelector(s);
@@ -78,6 +78,9 @@ function loadLevel(n) {
   const ox = view.left + (view.boardW - level.width) / 2;
   const oy = view.top + (view.boardH - level.height) / 2;
   renderer.setup(view, level, { ox, oy, guide: settings.guide });
+  const shell = paletteFor(n).shell;
+  document.body.style.background = shell;
+  document.querySelector('meta[name=theme-color]').content = shell;
   ball = createBall(level);
   time = 0; falls = 0; acc = 0;
   if (state === 'won') state = 'play';
@@ -170,7 +173,7 @@ function renderMenu() {
     if (best[n] !== undefined) b.title = `Best ${fmt(best[n])}`;
     levels.append(b);
   }
-  $('#guide').textContent = settings.guide ? 'Guide line on' : 'Guide line off';
+  $('#guide').textContent = settings.guide ? 'Trail on' : 'Trail off';
   $('#guide').classList.toggle('on', settings.guide);
   $('#sound').textContent = settings.sound ? 'Sound on' : 'Sound off';
   $('#sound').classList.toggle('on', settings.sound);

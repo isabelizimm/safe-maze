@@ -1,4 +1,4 @@
-// Synthesised sound: the rumble of a steel ball on wood, knocks on the walls, drops into holes.
+// Synthesised sound: the rattle of a ball bearing on a plastic tray, clicks on the walls, drops into holes.
 // Everything is generated from the ball's motion, so a ball at rest is silent.
 
 export class Sound {
@@ -32,7 +32,7 @@ export class Sound {
     this.rollGain.gain.value = 0;
     const hiss = ctx.createBiquadFilter();
     hiss.type = 'highpass';
-    hiss.frequency.value = 3000;
+    hiss.frequency.value = 4500;
     this.hissGain = ctx.createGain();
     this.hissGain.gain.value = 0;
     src.connect(this.rollBand).connect(this.rollGain).connect(this.master);
@@ -51,8 +51,8 @@ export class Sound {
     const v = Math.min(1, speed / 450);
     const g = v < 0.01 ? 0 : 0.5 * v ** 1.1 * (0.85 + 0.3 * Math.random());
     this.rollGain.gain.setTargetAtTime(g, t, 0.025);
-    this.hissGain.gain.setTargetAtTime(v < 0.01 ? 0 : 0.03 * v, t, 0.04);
-    this.rollBand.frequency.setTargetAtTime(110 + 520 * v, t, 0.05);
+    this.hissGain.gain.setTargetAtTime(v < 0.01 ? 0 : 0.05 * v, t, 0.04);
+    this.rollBand.frequency.setTargetAtTime(260 + 900 * v, t, 0.05);
   }
 
   burst(t, { gain, freq, q = 3, dur = 0.03, type = 'bandpass' }) {
@@ -89,9 +89,9 @@ export class Sound {
     const a = Math.min(1, v / 400) ** 1.3;
     if (a < 0.01) return;
     const t = this.ctx.currentTime;
-    this.burst(t, { gain: 0.9 * a, freq: 2400 + Math.random() * 600, q: 2.5, dur: 0.025 });
-    this.tone(t, { gain: 0.35 * a, f0: 950 + Math.random() * 250, dur: 0.06 });
-    this.tone(t, { gain: 0.25 * a, f0: 210, f1: 170, dur: 0.05 });
+    this.burst(t, { gain: 0.9 * a, freq: 3800 + Math.random() * 900, q: 2.5, dur: 0.018 });
+    this.tone(t, { gain: 0.3 * a, f0: 1900 + Math.random() * 400, dur: 0.035 });
+    this.tone(t, { gain: 0.2 * a, f0: 520, f1: 430, dur: 0.03 });
   }
 
   fall() {
